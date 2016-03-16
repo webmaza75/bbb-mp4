@@ -9,6 +9,8 @@ class Layout
 
     public $windows;
 
+    protected $skippedWindows = ['NotesWindow'];
+
     /**
      * Layout constructor.
      * @param string $filename
@@ -43,7 +45,11 @@ class Layout
         $layout = $this->getLayout($name);
         $ret = [];
         foreach ($layout->window as $window) {
-            $ret[(string)$window->attributes()->name] = new LayoutWindow([
+            $name = (string)$window->attributes()->name;
+            if (in_array($name, $this->skippedWindows)) {
+                continue;
+            }
+            $ret[$name] = new LayoutWindow([
                 'x' => (float)$window->attributes()->x,
                 'y' => (float)$window->attributes()->y,
                 'width' => (float)$window->attributes()->width,
@@ -52,7 +58,9 @@ class Layout
                 'minHeight' => (float)$window->attributes()->minHeight ?: null,
             ]);
         }
-        return $ret;
+        return array_filter($ret, function ($x) {
+            return $x->width > 0 && $x->height > 0;
+        });
     }
 
 }
