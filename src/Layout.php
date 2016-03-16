@@ -7,18 +7,21 @@ class Layout
 
     protected $xml;
 
+    public $windows;
+
     /**
      * Layout constructor.
      * @param string $filename
      * @throws \Exception
      */
-    public function __construct(string $filename)
+    public function __construct(string $filename, string $name)
     {
         $xml = @simplexml_load_file($filename);
         if (false === $xml) {
             throw new \Exception('Layout file can not be loaded: ' . $filename);
         }
         $this->xml = $xml;
+        $this->windows = $this->getLayoutWindows($name);
     }
 
     /**
@@ -35,7 +38,7 @@ class Layout
         return $res[0];
     }
 
-    public function getLayoutWindow(string $name)
+    public function getLayoutWindows(string $name)
     {
         $layout = $this->getLayout($name);
         $ret = [];
