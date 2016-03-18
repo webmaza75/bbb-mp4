@@ -31,7 +31,7 @@ class Layout
      * @return \SimpleXMLElement
      * @throws \Exception
      */
-    public function getLayout(string $name)
+    protected function getLayout(string $name)
     {
         $res = @$this->xml->xpath('//layouts/layout[@name="bbb.layout.name.' . $name . '"]');
         if (false === $res) {
@@ -40,15 +40,17 @@ class Layout
         return $res[0];
     }
 
-    public function getLayoutWindows(string $name)
+    protected function getLayoutWindows(string $name)
     {
         $layout = $this->getLayout($name);
         $ret = [];
         foreach ($layout->window as $window) {
             $name = (string)$window->attributes()->name;
+            /*
             if (in_array($name, $this->skippedWindows)) {
                 continue;
             }
+            */
             $ret[$name] = new LayoutWindow([
                 'x' => (float)$window->attributes()->x,
                 'y' => (float)$window->attributes()->y,
@@ -56,6 +58,7 @@ class Layout
                 'height' => (float)$window->attributes()->height,
                 'minWidth' => (float)$window->attributes()->minWidth ?: null,
                 'minHeight' => (float)$window->attributes()->minHeight ?: null,
+                'hidden' => (string)$window->attributes()->hidden == true,
             ]);
         }
         return array_filter($ret, function ($x) {

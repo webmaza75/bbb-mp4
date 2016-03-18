@@ -12,6 +12,8 @@ class LayoutWindow
     public $minWidth;
     public $minHeight;
 
+    public $hidden;
+
     public function __construct(array $props = [])
     {
         foreach ($props as $key => $val) {
