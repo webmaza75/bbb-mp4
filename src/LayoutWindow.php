@@ -2,25 +2,7 @@
 
 namespace ProfIT\Bbb;
 
-class LayoutWindow
+class LayoutWindow extends LayoutBox
 {
-
-    public $width;
-    public $height;
-    public $x;
-    public $y;
-    public $minWidth;
-    public $minHeight;
-
-    public $hidden;
-
-    public function __construct(array $props = [])
-    {
-        foreach ($props as $key => $val) {
-            if (null !== $val) {
-                $this->$key = $val;
-            }
-        }
-    }
-
+    public $name;
 }

@@ -44,6 +44,7 @@ class Layout
     {
         $layout = $this->getLayout($name);
         $ret = [];
+
         foreach ($layout->window as $window) {
             $name = (string)$window->attributes()->name;
             /*
@@ -51,19 +52,26 @@ class Layout
                 continue;
             }
             */
+
+            $attributes = $window->attributes();
+
+            if (! $attributes->width || ! $attributes->height) continue;
+
             $ret[$name] = new LayoutWindow([
-                'x' => (float)$window->attributes()->x,
-                'y' => (float)$window->attributes()->y,
-                'width' => (float)$window->attributes()->width,
-                'height' => (float)$window->attributes()->height,
-                'minWidth' => (float)$window->attributes()->minWidth ?: null,
-                'minHeight' => (float)$window->attributes()->minHeight ?: null,
-                'hidden' => (string)$window->attributes()->hidden == true,
+                'name'   => $name,
+                'rX'     => (float) $attributes->x,
+                'rY'     => (float) $attributes->y,
+                'rW'     => (float) $attributes->width,
+                'rH'     => (float) $attributes->height,
+                'minW'   => (int)   $attributes->minWidth ?: null,
+                'minH'   => (int)   $attributes->minHeight ?: null,
+                'hidden' => $attributes->hidden == true,
             ]);
+
+            var_dump($ret[$name]);
         }
-        return array_filter($ret, function ($x) {
-            return $x->width > 0 && $x->height > 0;
-        });
+
+        return $ret;
     }
 
 }
