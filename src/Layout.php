@@ -63,10 +63,10 @@ class Layout
 
             $ret[$name] = new layout\Window([
                 'name'   => $name,
-                'rX'     => (float) $attributes->x,
-                'rY'     => (float) $attributes->y,
-                'rW'     => (float) $attributes->width,
-                'rH'     => (float) $attributes->height,
+                'relX'   => (float) $attributes->x,
+                'relY'   => (float) $attributes->y,
+                'relW'   => (float) $attributes->width,
+                'relH'   => (float) $attributes->height,
                 'minW'   => (int)   $attributes->minWidth ?: null,
                 'minH'   => (int)   $attributes->minHeight ?: null,
                 'hidden' => $attributes->hidden == true,

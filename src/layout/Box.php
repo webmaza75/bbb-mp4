@@ -2,23 +2,31 @@
 
 namespace ProfIT\Bbb\layout;
 
+/**
+ * Class Box
+ * @package ProfIT\Bbb\layout
+ * @property-read int $absX calculated absolute x
+ * @property-read int $absY calculated absolute y
+ * @property-read int $absW calculated absolute width
+ * @property-read int $absH calculated absolute height
+ */
+
 class Box {
     public $x;
     public $y;
     public $w;
     public $h;
 
-    public $rX;
-    public $rY;
-    public $rW;
-    public $rH;
+    public $relX;
+    public $relY;
+    public $relW;
+    public $relH;
     public $minW;
     public $minH;
 
     /** @var Box */
     public $parent;
     public $children = [];
-    public $canvas;
     public $hidden;
 
     public function __construct(array $props = [])
@@ -33,85 +41,84 @@ class Box {
 
     public function getCoordinates()
     {
-        $x = $this->absX();
-        $y = $this->absY();
+        $x = $this->absX;
+        $y = $this->absY;
 
-        return [[$x, $y], [$x + $this->absW(), $y + $this->absH()]];
+        return [[$x, $y], [$x + $this->absW, $y + $this->absH]];
     }
 
-    public function render()
+    public function render($canvas)
     {
         if ($this->hidden) return;
 
-        if ($parent = $this->parent) {
-            $canvas = $parent->canvas;
-
+        if ($this->parent) {
             $colorGray = imagecolorallocate($canvas, 0xCC, 0xCC, 0xCC);
             $colorRed = imagecolorallocate($canvas, 0xCC, 0x00, 0x00);
             $colorWhite = imagecolorallocate($canvas, 0xFF, 0xFF, 0xFF);
             $c = $this->getCoordinates();
 
-            echo $this->name;
             print_r($c);
 
             imagefilledrectangle($canvas, $c[0][0], $c[0][1], $c[1][0], $c[1][1], $colorGray);
             imagerectangle($canvas, $c[0][0], $c[0][1], $c[1][0], $c[1][1], $colorWhite);
-        } else {
-            $this->canvas = imagecreatetruecolor($this->absW(), $this->absH());
         }
-
 
         foreach ($this->children as $child) {
             /** @var Window $child */
-            $child->render();
+            $child->render($canvas);
         }
     }
 
-    public function setChildren(array $children)
+    public function addChild(Box $child)
     {
-        foreach ($children as $child) {
-            /** @var Window $child */
-            $child->parent = $this;
-            $child->canvas = $this->canvas;
+        $child->parent = $this;
+
+        $this->children[] = $child;
+    }
+
+    public function __get($name)
+    {
+        if (strpos($name, 'abs') === 0) {
+            $prop = substr($name, 3);
+
+            if (! in_array($prop, ['X', 'Y', 'W', 'H'])) {
+                throw new \Exception("Property $name is not defined");
+            }
+
+            if (($direct = $this->{strtolower($prop)}) !== null) return $direct;
+
+            return $this->{'getAbs'. $prop}($this->parent);
         }
 
-        $this->children = $children;
+        throw new \Exception("Property $name is not defined");
     }
 
-
-    public function absX()
+    public function getAbsX(Box $parent)
     {
-        if ($this->x !== null) return $this->x;
+        $offset = $this->relX * $parent->absW;
 
-        // ceil($width * $window->x) + floor($width * $window->width) - 1
-
-        return ceil($this->rX * $this->parent->absX()) + floor($this->rX * $this->parent->absW()) - 1;
+        return ceil($parent->absX + $offset);
     }
 
-    public function absY()
+    public function getAbsY(Box $parent)
     {
-        if ($this->y !== null) return $this->y;
+        $offset = $this->relY * $parent->absH;
 
-        return ceil($this->rY * $this->parent->absY()) + floor($this->rY * $this->parent->absH()) - 1;
-
+        return ceil($parent->absY + $offset);
     }
 
-    public function absW()
+    public function getAbsW(Box $parent)
     {
-        if ($this->w !== null) return $this->w;
-
-        $w = $this->rW * $this->parent->absW();
+        $w = $this->relW * $parent->absW;
 
         //if ($w < $this->minW) $w = $this->minW;
 
         return floor($w);
     }
 
-    public function absH()
+    public function getAbsH(Box $parent)
     {
-        if ($this->h !== null) return $this->h;
-
-        $h = $this->rH * $this->parent->absH();
+        $h = $this->relH * $parent->absH;
 
         //if ($h < $this->minH) $h = $this->minH;
 
