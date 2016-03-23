@@ -12,6 +12,10 @@ namespace ProfIT\Bbb\layout;
  */
 
 class Box {
+    const COLOR_BLACK = '000000';
+    const COLOR_GRAY  = 'cccccc';
+    const COLOR_WHITE = 'ffffff';
+
     public $x;
     public $y;
     public $w;
@@ -25,6 +29,7 @@ class Box {
     public $minW;
     public $minH;
 
+    /** @var int absolute padding */
     public $pad = 0;
     /** @var array absolute positive content offset [top, right, bottom, left] */
     public $offset = [0, 0, 0, 0];
@@ -33,6 +38,10 @@ class Box {
     public $parent;
     public $children = [];
     public $hidden;
+
+    public $color = self::COLOR_BLACK;
+    public $bgColor;
+    public $borderColor;
 
     public function __construct(array $props = [])
     {
@@ -61,13 +70,15 @@ class Box {
         if ($this->hidden) return;
 
         if ($this->parent) {
-            $colorGray = imagecolorallocate($canvas, 0xCC, 0xCC, 0xCC);
-            $colorRed = imagecolorallocate($canvas, 0xCC, 0x00, 0x00);
-            $colorWhite = imagecolorallocate($canvas, 0xFF, 0xFF, 0xFF);
             $c = $this->getCoordinates();
 
-            imagefilledrectangle($canvas, $c[0][0], $c[0][1], $c[1][0], $c[1][1], $colorGray);
-            imagerectangle($canvas, $c[0][0], $c[0][1], $c[1][0], $c[1][1], $colorWhite);
+            if ($bgColor = $this->bgColor) {
+                imagefilledrectangle($canvas, $c[0][0], $c[0][1], $c[1][0], $c[1][1], self::color($canvas, $bgColor));
+            }
+
+            if ($borderColor = $this->borderColor) {
+                imagerectangle($canvas, $c[0][0], $c[0][1], $c[1][0], $c[1][1], self::color($canvas, $borderColor));
+            }
         }
 
         foreach ($this->children as $child) {
@@ -104,14 +115,14 @@ class Box {
     {
         $offset = $this->relX * $parent->absW;
 
-        return ceil($parent->absX + $offset + $parent->offset[3]);
+        return round($parent->absX + $offset + $parent->offset[3]);
     }
 
     public function getAbsY(Box $parent)
     {
         $offset = $this->relY * $parent->absH + $parent->offset[0];
 
-        return ceil($parent->absY + $offset);
+        return (int) round($parent->absY + $offset);
     }
 
     public function getAbsW(Box $parent)
@@ -121,7 +132,7 @@ class Box {
 
         //if ($w < $this->minW) $w = $this->minW;
 
-        return floor($w);
+        return (int) round($w);
     }
 
     public function getAbsH(Box $parent)
@@ -131,7 +142,7 @@ class Box {
 
         //if ($h < $this->minH) $h = $this->minH;
 
-        return floor($h);
+        return (int) round($h);
     }
 
     public function setPadding(int $value)
@@ -159,5 +170,14 @@ class Box {
         }
 
         $this->offset[$what] += $value;
+
+        return $this->offset;
+    }
+
+    public static function color($canvas, string $value)
+    {
+        list ($r, $g, $b) = array_map('hexdec', str_split($value, 2));
+
+        return imagecolorallocate($canvas, $r, $g, $b);
     }
 }
