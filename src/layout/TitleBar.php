@@ -4,7 +4,7 @@ namespace ProfIT\Bbb\layout;
 
 class TitleBar extends Box
 {
-    const FONT_PATH = 'resources/fonts/';
+    const FONT_PATH = __DIR__ . '/../../resources/fonts';
 
     /** @var Window $parent */
     public $parent;
@@ -19,7 +19,7 @@ class TitleBar extends Box
         parent::render($canvas);
 
         $text = $this->parent->title;
-        $font = self::FONT_PATH. 'arial.ttf';
+        $font = self::FONT_PATH. '/arial.ttf';
         $size = 12;
 
         list($llx, $lly, $lrx, $lry, $urx, $ury, $ulx, $uly) = imagettfbbox($size, 0, $font, $text);
