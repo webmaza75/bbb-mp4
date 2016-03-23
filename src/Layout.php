@@ -70,9 +70,8 @@ class Layout
                 'minW'   => (int)   $attributes->minWidth ?: null,
                 'minH'   => (int)   $attributes->minHeight ?: null,
                 'hidden' => $attributes->hidden == true,
+                'pad'    => 2
             ]);
-
-            var_dump($ret[$name]);
         }
 
         return $ret;

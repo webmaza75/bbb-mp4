@@ -21,8 +21,13 @@ class Box {
     public $relY;
     public $relW;
     public $relH;
+
     public $minW;
     public $minH;
+
+    public $pad = 0;
+    /** @var array absolute positive content offset [top, right, bottom, left] */
+    public $offset = [0, 0, 0, 0];
 
     /** @var Box */
     public $parent;
@@ -35,6 +40,10 @@ class Box {
             if (null !== $val) {
                 $this->$key = $val;
             }
+        }
+
+        if ($pad = $this->pad) {
+            $this->setPadding($pad);
         }
     }
 
@@ -57,8 +66,6 @@ class Box {
             $colorWhite = imagecolorallocate($canvas, 0xFF, 0xFF, 0xFF);
             $c = $this->getCoordinates();
 
-            print_r($c);
-
             imagefilledrectangle($canvas, $c[0][0], $c[0][1], $c[1][0], $c[1][1], $colorGray);
             imagerectangle($canvas, $c[0][0], $c[0][1], $c[1][0], $c[1][1], $colorWhite);
         }
@@ -76,7 +83,7 @@ class Box {
         $this->children[] = $child;
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         if (strpos($name, 'abs') === 0) {
             $prop = substr($name, 3);
@@ -97,19 +104,20 @@ class Box {
     {
         $offset = $this->relX * $parent->absW;
 
-        return ceil($parent->absX + $offset);
+        return ceil($parent->absX + $offset + $parent->offset[3]);
     }
 
     public function getAbsY(Box $parent)
     {
-        $offset = $this->relY * $parent->absH;
+        $offset = $this->relY * $parent->absH + $parent->offset[0];
 
         return ceil($parent->absY + $offset);
     }
 
     public function getAbsW(Box $parent)
     {
-        $w = $this->relW * $parent->absW;
+        $os = $parent->offset;
+        $w = $this->relW * $parent->absW - $os[1] - $os[3];
 
         //if ($w < $this->minW) $w = $this->minW;
 
@@ -118,10 +126,38 @@ class Box {
 
     public function getAbsH(Box $parent)
     {
-        $h = $this->relH * $parent->absH;
+        $os = $parent->offset;
+        $h = $this->relH * $parent->absH - $os[0] - $os[2];
 
         //if ($h < $this->minH) $h = $this->minH;
 
         return floor($h);
+    }
+
+    public function setPadding(int $value)
+    {
+        $os = &$this->offset;
+
+        $os[0] += $value;
+        $os[1] += $value;
+        $os[2] += $value;
+        $os[3] += $value;
+    }
+
+    public function addOffset($what, $value = null)
+    {
+        if (is_array($what)) {
+            $what = array_filter($what, 'is_numeric');
+
+            foreach ($what as $i => $value) {
+                if (! isset($this->offset[$i])) throw new \Exception('Unknown offset: '. $i);
+
+                $this->offset[$i] += $value;
+            }
+
+            return $this->offset;
+        }
+
+        $this->offset[$what] += $value;
     }
 }

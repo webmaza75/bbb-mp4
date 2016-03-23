@@ -9,12 +9,7 @@ class Window extends Box
 
     public function createTitleBar()
     {
-        $titleBar = new TitleBar([
-            'relX' => 0,
-            'relY' => 0,
-            'relW' => 1,
-            'h'    => 30
-        ]);
+        $titleBar = new TitleBar();
 
         $this->addChild($titleBar);
     }
