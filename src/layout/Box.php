@@ -1,8 +1,8 @@
 <?php
 
-namespace ProfIT\Bbb;
+namespace ProfIT\Bbb\layout;
 
-class LayoutBox {
+class Box {
     public $x;
     public $y;
     public $w;
@@ -15,7 +15,7 @@ class LayoutBox {
     public $minW;
     public $minH;
 
-    /** @var LayoutBox */
+    /** @var Box */
     public $parent;
     public $children = [];
     public $canvas;
@@ -62,7 +62,7 @@ class LayoutBox {
 
 
         foreach ($this->children as $child) {
-            /** @var LayoutWindow $child */
+            /** @var Window $child */
             $child->render();
         }
     }
@@ -70,7 +70,7 @@ class LayoutBox {
     public function setChildren(array $children)
     {
         foreach ($children as $child) {
-            /** @var LayoutWindow $child */
+            /** @var Window $child */
             $child->parent = $this;
             $child->canvas = $this->canvas;
         }

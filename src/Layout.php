@@ -4,9 +4,9 @@ namespace ProfIT\Bbb;
 
 class Layout
 {
-
     protected $xml;
 
+    public $name;
     public $windows;
 
     protected $skippedWindows = ['NotesWindow'];
@@ -18,35 +18,39 @@ class Layout
      */
     public function __construct(string $filename, string $name)
     {
+        $this->name = $name;
         $xml = @simplexml_load_file($filename);
+
         if (false === $xml) {
             throw new \Exception('Layout file can not be loaded: ' . $filename);
         }
+
         $this->xml = $xml;
-        $this->windows = $this->getLayoutWindows($name);
     }
 
     /**
-     * @param string $name
      * @return \SimpleXMLElement
      * @throws \Exception
      */
-    protected function getLayout(string $name)
+    protected function getData()
     {
+        $name = $this->name;
         $res = @$this->xml->xpath('//layouts/layout[@name="bbb.layout.name.' . $name . '"]');
+
         if (false === $res) {
             throw new \Exception('Invalid layout');
         }
+
         return $res[0];
     }
 
-    protected function getLayoutWindows(string $name)
+    public function getWindows()
     {
-        $layout = $this->getLayout($name);
+        $data = $this->getData();
         $ret = [];
 
-        foreach ($layout->window as $window) {
-            $name = (string)$window->attributes()->name;
+        foreach ($data->window as $window) {
+            $name = (string) $window->attributes()->name;
             /*
             if (in_array($name, $this->skippedWindows)) {
                 continue;
@@ -57,7 +61,7 @@ class Layout
 
             if (! $attributes->width || ! $attributes->height) continue;
 
-            $ret[$name] = new LayoutWindow([
+            $ret[$name] = new layout\Window([
                 'name'   => $name,
                 'rX'     => (float) $attributes->x,
                 'rY'     => (float) $attributes->y,
