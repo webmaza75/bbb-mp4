@@ -77,4 +77,8 @@ class Layout
         return $ret;
     }
 
+    public function setStyleSheet($filename)
+    {
+        $styleSheet = new style\Sheet($filename);
+    }
 }
