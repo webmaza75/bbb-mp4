@@ -1,6 +1,20 @@
 # bbb-mp4
 BigBlueButton Record Process
 
+# Команды
+
+## extractCursorEvents
+    php extractCursorEvents.php --events-file-src=events.xml --events-file-dst=events.new.xml > cursor.events
+
+Удаляет из файла events.xml события перемещения курсора, создавая новый файл events.xml без них. Курсорные же события
+выводятся в stdout как CSV "timestamp,x,y"
+
+## generateCursorPng
+    php generateCursorPng.php --src=./cursor.events --dst=./cursor/ --width=1280 --height=720 --diameter=10
+
+Создает на базе файла событий курсора в формате CSV последовательность файлов в формате PNG с изображением курсора.
+Задается папка, куда будет сохранена последовательность изображений, их ширина и высота и размер пятна курсора
+
 # Окна (они же области экрана)
 ## NotesWindow
 ## BroadcastWindow
