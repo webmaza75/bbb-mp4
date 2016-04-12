@@ -14,7 +14,6 @@ $h = $options['height'] ? : 720;
 
 require __DIR__ . '/autoload.php';
 
-$s = fopen($resFileName, 'r');
 $layout = new \ProfIT\Bbb\Layout($resFileName, 'defaultlayout');
 $layout->setStyleSheet($cssFileName);
 $image = new \ProfIT\Bbb\layout\Image([
