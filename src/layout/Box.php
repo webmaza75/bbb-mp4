@@ -30,7 +30,7 @@ class Box {
     public $minW;
     public $minH;
 
-    public $offsetH = 40/720; // Отступ сверху для меню с кнопками
+    public $offsetH = 40 / 720; // Отступ сверху для меню с кнопками
 
     /** @var int absolute padding */
     public $pad = 0;
@@ -93,7 +93,6 @@ class Box {
     public function addChild(Box $child)
     {
         $child->parent = $this;
-
         $this->children[] = $child;
     }
 

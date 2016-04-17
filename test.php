@@ -10,6 +10,7 @@ $resFileName = realpath($options['src']);
 $cssFileName = realpath($options['css']);
 $w = $options['width'] ? : 1280;
 $h = $options['height'] ? : 720;
+$hTopMenu = 40;
 // Список участников вебинара (внешние данные)
 $students = [
     ['name' => 'Воротилов Глеб', 'answer' => 'добрый вечер', 'time' => '20:00'],
@@ -19,6 +20,7 @@ $students = [
 ];
 $master = 'Степанцев Альберт'; // внешние данные
 $presentationName = 'P3P.pdf'; // Название презентации (возможно, внешние данные)
+$lessonTitle = 'PHP-2: Профессиональное программирование: Обзор современных фреймворков';
 $titlePadding = 35;
 
 require __DIR__ . '/autoload.php';
@@ -46,7 +48,7 @@ foreach ($windows as $window) {
     if (!$window->relY) {
         $startY = 0;
     } else {
-        $startY = $window->relY * $h + 3;
+        $startY = ceil($window->relY * $h) + 3;
     }
     drawIcon($im, $startX, $startY + 3, $imgSize, $src, $filter = true);
 }
@@ -77,7 +79,7 @@ $c[2] = ceil($windows['PresentationWindow']->relW * $w);
 $c[3] = ceil($windows['PresentationWindow']->relH * $h);
 
 // 958 * 656 - исходный размер слайда
-imagecopyresampled($im, $src, $c[0], $c[1] + $titlePadding, 0, 0, (958*2/3 + 17), (656*2/3 + 17), 958, 656);
+imagecopyresampled($im, $src, $c[0], $c[1] + $titlePadding + $hTopMenu, 0, 0, (958*2/3 + 17), (656*2/3 + 17), 958, 656);
 
 /** Нижние иконки на кнопках под презентацией */
 
@@ -88,49 +90,49 @@ $startXbtn = $c[0] + 10; // координата X начала кнопки
 $src = __DIR__ . '/resources/style/css/assets/images/upload.png';
 $imgSize = getimagesize($src); // получение размера изображения
 
-drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize,  $src);
+drawButtonWithIcon($im, $startXbtn, $startYbtn + $hTopMenu, $imgSize,  $src);
 
 // кнопка под иконку (стрелка влево - disabled)
 $startXbtn += 100;
 $src = __DIR__ . '/resources/style/css/assets/images/left-arrow.png';
 $imgSize = getimagesize($src);
 
-drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src, true);
+drawButtonWithIcon($im, $startXbtn, $startYbtn + $hTopMenu, $imgSize, $src, true);
 
 // Название презентации
 $fontSize = 11;
 $font = __DIR__ . '/resources/fonts/arial.ttf';
 $textBlack = imagecolorallocate($im, 00, 00, 00);
-imagettftext ($im, $fontSize, 0, $startXbtn - 5, $titlePadding - 10, $textColor, $font, $presentationName );
+imagettftext ($im, $fontSize, 0, $startXbtn - 5, $titlePadding - 10 + $hTopMenu, $textColor, $font, $presentationName );
 
 // кнопка с количеством слайдов
 $startXbtn += 50;
 // Подключаемый шрифт
-$fontSize = 10;
+$fontSize = 9;
 $textColor = imagecolorallocate($im, 47, 47, 47); // цвет текста
-drawButtonWithIcon($im, $startXbtn, $startYbtn);
-imagettftext ($im, $fontSize, 0, $startXbtn + 2, $startYbtn + 20, $textColor, $font, '1 / 25' );
+drawButtonWithIcon($im, $startXbtn, $startYbtn + $hTopMenu);
+imagettftext ($im, $fontSize, 0, $startXbtn + 6, $startYbtn + 20 + $hTopMenu, $textColor, $font, '1 / 25' );
 
 // кнопка под иконку (стрелка вправо)
 $startXbtn += 50;
 $src = __DIR__ . '/resources/style/css/assets/images/right-arrow.png';
 $imgSize = getimagesize($src);
 
-drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src);
+drawButtonWithIcon($im, $startXbtn, $startYbtn + $hTopMenu, $imgSize, $src);
 
 // кнопка под иконку (двунаправленная стрелка / увеличить по ширине)
 $startXbtn = $c[2] + $c[0] - 100;
 $src = __DIR__ . '/resources/style/css/assets/images/fit-to-width.png';
 $imgSize = getimagesize($src);
 
-drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src);
+drawButtonWithIcon($im, $startXbtn, $startYbtn + $hTopMenu, $imgSize, $src);
 
 // кнопка под иконку (fit-to-screen)
 $startXbtn += 40;
 $src = __DIR__ . '/resources/style/css/assets/images/fit-to-screen.png';
 $imgSize = getimagesize($src);
 
-drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src);
+drawButtonWithIcon($im, $startXbtn, $startYbtn + $hTopMenu, $imgSize, $src);
 
 /**
  * Блок для списка студентов (слушателей)
@@ -147,9 +149,8 @@ $wStudentBlock = $c[2] - $pad * 2;
 
 // Название презентации
 $fontSize = 11;
-//$font = __DIR__ . '/resources/fonts/arial.ttf';
 $textBlack = imagecolorallocate($im, 00, 00, 00);
-imagettftext ($im, $fontSize, 0, 115, $titlePadding - 12, $textColor, $font, count($students) );
+imagettftext ($im, $fontSize, 0, 115, $titlePadding - 12 + $hTopMenu, $textColor, $font, count($students) );
 
 $studentImage = imagecreate($wStudentBlock, $hStudentBlock);
 // Цвета полос и имени преподавателя
@@ -208,17 +209,17 @@ $startYbtn = $c[3] - $bottomPadding / 2 - $imgSize[1];
 $src = __DIR__ . '/resources/style/css/assets/images/hand.png';
 $imgSize = getimagesize($src);
 
-drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src);
+drawButtonWithIcon($im, $startXbtn, $startYbtn + $hTopMenu, $imgSize, $src);
 
 // кнопка под иконку (колесо - настройка?) - иконка не найдена, заменена на эллипс (рисование)
 $startXbtn +=40;
 $src = __DIR__ . '/resources/style/css/assets/images/ellipse.png';
 $imgSize = getimagesize($src);
 
-drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src);
+drawButtonWithIcon($im, $startXbtn, $startYbtn + $hTopMenu, $imgSize, $src);
 
 // Соединение блока списка студентов с общим окном (картинкой)
-imagecopy($im, $studentImage, $pad, $c[1] + $titlePadding, 0, 0, $wStudentBlock, $hStudentBlock);
+imagecopy($im, $studentImage, $pad, $c[1] + $titlePadding + $hTopMenu, 0, 0, $wStudentBlock, $hStudentBlock);
 
 // Медиа преподавателя (микрофон) - исходник белый и крупный
 $src = imagecreatefrompng(__DIR__ . '/resources/style/css/assets/images/audio_20_white.png');
@@ -228,7 +229,7 @@ imagefilter($src, IMG_FILTER_BRIGHTNESS, 50); // осветление
 $src = imagecrop($src, ['x' => 9, 'y' => 9, 'width' => 14, 'height' => 14]);
 
 // вставка с ресайзем до 12*12
-imagecopyresampled($im, $src, $startXList * 4, $hMicro + 5, 0, 0, 12, 12, 14, 14);
+imagecopyresampled($im, $src, $startXList * 4, $hMicro + 5 + $hTopMenu, 0, 0, 12, 12, 14, 14);
 
 /**
  * Блок чата
@@ -239,8 +240,7 @@ $c[2] = ceil($windows['ChatWindow']->relW * $w);
 $c[3] = ceil($windows['ChatWindow']->relH * $h);
 
 $wChat = $c[2] - 5; // Ширина блока чата
-//echo $wChat;
-$hChat = $c[3] - $titlePadding; // Высота блока чата
+$hChat = $c[3] - $titlePadding - 4; // Высота блока чата
 $imageChat = imagecreate($wChat, $hChat);
 $white = imagecolorallocate($imageChat, 255, 255, 255); // белый фон
 
@@ -298,9 +298,77 @@ drawRoundRectangle($imageChat, 60, 0, 145, 29, 2, $buttonFilledColor);
 drawRoundRectangleNotFilled($imageChat, 60, 0, 145, 29, 2, $greyHorizLine);
 imagettftext ($imageChat , $fontSize , 0, 65 , 21, $textColor , $font , 'Настройки');
 
-imagecopy($im, $imageChat, 895, 33, 0, 0, $wChat, $hChat);
+imagecopy($im, $imageChat, $c[0]+2, $c[1] + $hTopMenu + $titlePadding, 0, 0, $wChat, $hChat);
+
+/**
+ * Формирование верхнего меню на черном фоне
+ */
+
+// кнопка "экран"
+$startXbtn = 10;
+$startYbtn = 6;
+$src = __DIR__ . '/resources/style/css/assets/images/deskshare_icon.png';
+$imgSize = getimagesize($src);
+
+drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src, false, 2);
+
+// кнопка "подключенные наушники"
+$startXbtn += 50;
+$src = __DIR__ . '/resources/style/css/assets/images/headset_open.png';
+$imgSize = getimagesize($src);
+
+drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src, false, 2);
+
+// кнопка "видеокамера"
+$startXbtn += 50;
+$src = __DIR__ . '/resources/style/css/assets/images/webcam.png';
+$imgSize = getimagesize($src);
+
+drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src, false, 2);
+
+// кнопка "контроль записи"
+$startXbtn += 50;
+$src = __DIR__ . '/resources/style/css/assets/images/control-record.png';
+$imgSize = getimagesize($src);
+
+drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src, false, 2);
+
+// кнопка "микрофон"
+$startXbtn += 65;
+$src = __DIR__ . '/resources/style/css/assets/images/control-record.png';
+$imgSize = getimagesize($src);
+
+drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src, false, 3);
+
+// Название урока
+$startXbtn +=110;
+$fontSize = 11;
+$textColor = imagecolorallocate($im, 255, 255, 255); // белый цвет для текста меню
+imagettftext ($im, $fontSize, 0, $startXbtn, $startYbtn + 17, $textColor, $font, $lessonTitle );
 
 
+// кнопка "клавиши быстрого доступа"
+$startXbtn = $w - 270;
+$fontSize = 10;
+$textColor = imagecolorallocate($im, 0, 0, 0);
+$buttonFilledColor = imagecolorallocate($im, 240, 240, 240);
+$buttonBorderColor = imagecolorallocate($im, 190, 190, 190);
+drawRoundRectangle($im, $startXbtn, $startYbtn, $startXbtn + 170, $startYbtn + 24, 3, $buttonFilledColor);
+drawRoundRectangleNotFilled($im, $startXbtn, $startYbtn, $startXbtn + 170, $startYbtn + 24, 3, $buttonBorderColor);
+imagettftext ($im, $fontSize, 0, $startXbtn + 5, $startYbtn+17, $textColor, $font, 'клавиши быстрого доступа' );
+
+// Знак вопроса
+$fontSize = 11;
+$startXbtn += 190;
+$textColor = imagecolorallocate($im, 255, 255, 255); // белый цвет для текста меню
+imagettftext ($im, $fontSize, 0, $startXbtn, $startYbtn + 17, $textColor, $font, '?' );
+
+// кнопка "logout"
+$startXbtn += 30;
+$src = __DIR__ . '/resources/style/css/assets/images/logout.png';
+$imgSize = getimagesize($src);
+
+drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src, false, 2);
 
 imagepng($im, 'test.png');
 imagedestroy($im);

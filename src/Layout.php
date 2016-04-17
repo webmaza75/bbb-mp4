@@ -10,7 +10,7 @@ class Layout
 
     //protected $skippedWindows = ['NotesWindow'];
     protected $skippedWindows = ['ViewersWindow', 'NotesWindow', 'BroadcastWindow', 'UsersWindow'];
-
+    public $offsetH = 40/720; // Отступ сверху для меню с кнопками
     /**
      * Layout constructor.
      * @param string $filename
@@ -80,15 +80,21 @@ class Layout
 
            // отправная точка - высота окна PresentationWindow
             if('VideoDock' == $name && 'defaultlayout' == $this->name) {
-                $ret[$name]->relH = $ret['PresentationWindow']->relH/3 + 0.02;
-                $ret[$name]->relY = $ret['PresentationWindow']->relH - $ret[$name]->relH;
+                $ret['PresentationWindow']->relH = $ret['PresentationWindow']->relH - $this->offsetH;
+                $ret[$name]->relH = $ret['PresentationWindow']->relH/3 + 0.02 - $this->offsetH;
+                // + ~1 пиксель, т.к. блок располагается ниже по вертикали
+                $ret[$name]->relY = $ret['PresentationWindow']->relH - $ret[$name]->relH + $this->offsetH + 0.001;
             }
             if('ListenersWindow' == $name && 'defaultlayout' == $this->name) {
-                $ret[$name]->relY = 0;
-                $ret[$name]->relH = $ret['VideoDock']->relY;
+                $ret[$name]->relY = $this->offsetH;
+                $ret[$name]->relH = $ret['VideoDock']->relY - $this->offsetH;
             }
             if('ChatWindow' == $name && 'defaultlayout' == $this->name) {
-                    $ret[$name]->relH = $ret['PresentationWindow']->relH;
+                $ret[$name]->relH = $ret['PresentationWindow']->relH;
+                $ret[$name]->relY = $this->offsetH;
+            }
+            if('PresentationWindow' == $name && 'defaultlayout' == $this->name) {
+                $ret[$name]->relY = $this->offsetH;
             }
         }
         return $ret;

@@ -7,13 +7,34 @@
  * @param $startYbtn - начало кнопки по Y
  * @param $imgSize - размер картинки-ресурса
  * @param bool|false $disabled - доступность кнопки (disabled - осветление иконки)
+ * @param $square :
+ * 1 - кваратная кнопка,
+ * 2 - меньше по вертикали (низкая)- верхнее меню,
+ * 3 - и меньше по вертикали и очень широкая
  */
-function drawButtonWithIcon($img, $startXbtn, $startYbtn, $imgSize = [25, 0], $src = '', $disabled = false)
+function drawButtonWithIcon($img, $startXbtn, $startYbtn, $imgSize = [25, 0], $src = '', $disabled = false, $square = 1)
 {
     $buttonFilledColor = imagecolorallocate($img, 240, 240, 240);
     $buttonBorderColor = imagecolorallocate($img, 190, 190, 190);
-    $endXbtn = 8 + $startXbtn + $imgSize[0] + 8;
-    $endYbtn = $startYbtn + 30;
+
+    switch ($square) {
+        case (2):
+            $offsetX = 10;
+            $endYbtn = $startYbtn + 24;
+            $endXbtn = $offsetX + $startXbtn + $imgSize[0] + $offsetX;
+            break;
+        case (3):
+            $offsetX = 40;
+            $endYbtn = $startYbtn + 24;
+            $endXbtn = $offsetX + $startXbtn + $imgSize[0] + $offsetX;
+            break;
+        default:
+            // $square == 1
+            $offsetX = 10;
+            $endYbtn = $startYbtn + 30;
+            $endXbtn = $offsetX + $startXbtn + $imgSize[0] + $offsetX;
+            break;
+    }
 
     drawRoundRectangle($img, $startXbtn, $startYbtn, $endXbtn, $endYbtn, 3, $buttonFilledColor); // фон
     drawRoundRectangleNotFilled($img, $startXbtn, $startYbtn, $endXbtn, $endYbtn, 3, $buttonBorderColor); // бордер
@@ -22,7 +43,7 @@ function drawButtonWithIcon($img, $startXbtn, $startYbtn, $imgSize = [25, 0], $s
         if ($disabled) {
             imagefilter($source, IMG_FILTER_BRIGHTNESS, 100);
         }
-        imagecopy($img, $source, $startXbtn + 8, $startYbtn + (30 - $imgSize[1]) / 2, 0, 0, $imgSize[0], $imgSize[1]);
+        imagecopy($img, $source, $startXbtn + $offsetX, ($startYbtn + $endYbtn - $imgSize[1]) / 2, 0, 0, $imgSize[0], $imgSize[1]);
     }
 }
 // Разместить только иконку
@@ -36,7 +57,7 @@ function drawIcon($img, $startX, $startY, $imgSize = [0, 0], $src, $filter = fal
     if ($disabled) {
         imagefilter($source, IMG_FILTER_BRIGHTNESS, 100);
     }
-    imagecopy($img, $source, $startX + 8, $startY + (30 - $imgSize[1]) / 2, 0, 0, $imgSize[0], $imgSize[1]);
+    imagecopy($img, $source, $startX + 10, $startY + (28 - $imgSize[1]) / 2, 0, 0, $imgSize[0], $imgSize[1]);
 }
 
 // Для кнопок с закругленными углами (фон)
