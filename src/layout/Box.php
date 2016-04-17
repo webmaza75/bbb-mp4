@@ -30,7 +30,7 @@ class Box {
     public $minW;
     public $minH;
 
-    public $offsetH = 0; //34; // Отступ сверху для меню с кнопками
+    public $offsetH = 40/720; // Отступ сверху для меню с кнопками
 
     /** @var int absolute padding */
     public $pad = 0;
