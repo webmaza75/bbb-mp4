@@ -5,11 +5,11 @@ namespace ProfIT\Bbb;
 class Layout
 {
     protected $xml;
-
     public $name;
     public $windows;
 
-    protected $skippedWindows = ['NotesWindow'];
+    //protected $skippedWindows = ['NotesWindow'];
+    protected $skippedWindows = ['ViewersWindow', 'NotesWindow', 'BroadcastWindow', 'UsersWindow'];
 
     /**
      * Layout constructor.
@@ -51,11 +51,10 @@ class Layout
 
         foreach ($data->window as $window) {
             $name = (string) $window->attributes()->name;
-            /*
-            if (in_array($name, $this->skippedWindows)) {
+
+            if ('defaultlayout' == $this->name && in_array($name, $this->skippedWindows)) {
                 continue;
             }
-            */
 
             $attributes = $window->attributes();
 
@@ -72,8 +71,26 @@ class Layout
                 'hidden' => $attributes->hidden == true,
                 'pad'    => 2
             ]);
-        }
 
+            /**
+             * Изменены размеры блоков за счет удаления одного из левой колонки:
+             * верхний блок - список студентов (слушателей) - ListenersWindow,
+             * нижний блок - видео-камеры - VideoDock
+             */
+
+           // отправная точка - высота окна PresentationWindow
+            if('VideoDock' == $name && 'defaultlayout' == $this->name) {
+                $ret[$name]->relH = $ret['PresentationWindow']->relH/3 + 0.02;
+                $ret[$name]->relY = $ret['PresentationWindow']->relH - $ret[$name]->relH;
+            }
+            if('ListenersWindow' == $name && 'defaultlayout' == $this->name) {
+                $ret[$name]->relY = 0;
+                $ret[$name]->relH = $ret['VideoDock']->relY;
+            }
+            if('ChatWindow' == $name && 'defaultlayout' == $this->name) {
+                    $ret[$name]->relH = $ret['PresentationWindow']->relH;
+            }
+        }
         return $ret;
     }
 
@@ -81,4 +98,5 @@ class Layout
     {
         $styleSheet = new style\Sheet($filename);
     }
+
 }

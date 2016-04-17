@@ -15,6 +15,7 @@ class Box {
     const COLOR_BLACK = '000000';
     const COLOR_GRAY  = 'cccccc';
     const COLOR_WHITE = 'ffffff';
+    const COLOR_LIGHT_GRAY = 'f0f0f0';
 
     public $x;
     public $y;
@@ -28,6 +29,8 @@ class Box {
 
     public $minW;
     public $minH;
+
+    public $offsetH = 0; //34; // Отступ сверху для меню с кнопками
 
     /** @var int absolute padding */
     public $pad = 0;
@@ -60,9 +63,9 @@ class Box {
     public function getCoordinates()
     {
         $x = $this->absX;
-        $y = $this->absY;
+        $y = $this->absY + $this->offsetH;
 
-        return [[$x, $y], [$x + $this->absW, $y + $this->absH]];
+        return [[$x, $y], [$x + $this->absW, $y + $this->absH - $this->offsetH]];
     }
 
     public function render($canvas)
@@ -71,8 +74,8 @@ class Box {
 
         if ($this->parent) {
             $c = $this->getCoordinates();
-
             if ($bgColor = $this->bgColor) {
+                imagefilledrectangle($canvas, $c[0][0] - 3, $c[0][1] - 3, $c[1][0] + 3, $c[1][1] + 3, self::color($canvas, self::COLOR_LIGHT_GRAY));
                 imagefilledrectangle($canvas, $c[0][0], $c[0][1], $c[1][0], $c[1][1], self::color($canvas, $bgColor));
             }
 
@@ -115,14 +118,14 @@ class Box {
     {
         $offset = $this->relX * $parent->absW;
 
-        return round($parent->absX + $offset + $parent->offset[3]);
+        return floor($parent->absX + $offset + $parent->offset[3]);
     }
 
     public function getAbsY(Box $parent)
     {
         $offset = $this->relY * $parent->absH + $parent->offset[0];
 
-        return (int) round($parent->absY + $offset);
+        return (int) floor($parent->absY + $offset);
     }
 
     public function getAbsW(Box $parent)
@@ -132,7 +135,7 @@ class Box {
 
         //if ($w < $this->minW) $w = $this->minW;
 
-        return (int) round($w);
+        return (int) floor($w);
     }
 
     public function getAbsH(Box $parent)
@@ -140,9 +143,7 @@ class Box {
         $os = $parent->offset;
         $h = $this->relH * $parent->absH - $os[0] - $os[2];
 
-        //if ($h < $this->minH) $h = $this->minH;
-
-        return (int) round($h);
+        return (int) floor($h);
     }
 
     public function setPadding(int $value)
