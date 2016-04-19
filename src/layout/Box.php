@@ -30,8 +30,6 @@ class Box {
     public $minW;
     public $minH;
 
-    public $offsetH = 40 / 720; // Отступ сверху для меню с кнопками
-
     /** @var int absolute padding */
     public $pad = 0;
     /** @var array absolute positive content offset [top, right, bottom, left] */
@@ -63,9 +61,9 @@ class Box {
     public function getCoordinates()
     {
         $x = $this->absX;
-        $y = $this->absY + $this->offsetH;
+        $y = $this->absY;
 
-        return [[$x, $y], [$x + $this->absW, $y + $this->absH - $this->offsetH]];
+        return [[$x, $y], [$x + $this->absW, $y + $this->absH]];
     }
 
     public function render($canvas)

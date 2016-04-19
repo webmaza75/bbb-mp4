@@ -10,7 +10,11 @@ $resFileName = realpath($options['src']);
 $cssFileName = realpath($options['css']);
 $w = $options['width'] ? : 1280;
 $h = $options['height'] ? : 720;
-$hTopMenu = 40;
+/**
+ * 40/ 720 - относительная высота верхнего меню, используемая в layout для расчетов
+ * (720 - это высота картинки по умолчанию, $h - высота картинки фактическая)
+ */
+$hTopMenu = 40 / 720 * $h;
 // Список участников вебинара (внешние данные)
 $students = [
     ['name' => 'Воротилов Глеб', 'answer' => 'добрый вечер', 'time' => '20:00'],
@@ -70,22 +74,36 @@ foreach ($windows as $window) {
 /**
  * Блок презентации
  */
-// Наложение слайда презентации (помещается в папку с иконками)
-$src = imagecreatefrompng(__DIR__ . '/resources/style/css/assets/images/slide.png');
 // Данные для окна
 $c[0] = ceil($windows['PresentationWindow']->relX * $w);
 $c[1] = ceil($windows['PresentationWindow']->relY);
-$c[2] = ceil($windows['PresentationWindow']->relW * $w);
+$c[2] = ceil($windows['PresentationWindow']->relW * $w) - 2; // на бордер
 $c[3] = ceil($windows['PresentationWindow']->relH * $h);
 
+// Наложение слайда презентации (помещается в папку с иконками)
+
+$source = __DIR__ . '/resources/style/css/assets/images/slide.png';
+$src = imagecreatefrompng($source);
 // 958 * 656 - исходный размер слайда
-imagecopyresampled($im, $src, $c[0], $c[1] + $titlePadding + $hTopMenu, 0, 0, (958*2/3 + 17), (656*2/3 + 17), 958, 656);
+$imgSize = getimagesize($source);
+//
+$diff = $imgSize[0] - $c[2];
+$wSlide = $c[2];
+$hSlide = $imgSize[1] - $diff;
+$endYSlide = $hSlide + $titlePadding + $hTopMenu;
+imagecopyresampled(
+    $im, $src,
+    $c[0], $c[1] + $titlePadding + $hTopMenu,
+    0, 0,
+    $wSlide, $endYSlide,
+    $imgSize[0], $imgSize[1]
+);
 
 /** Нижние иконки на кнопках под презентацией */
 
 // кнопка под иконку (добавить)
-$startYbtn = $c[1] + $titlePadding + ceil(656*2/3 + 17);
-$startYbtn += 20; // + вертикальный отступ после слайда
+$startYbtn = $c[1] + $titlePadding + $endYSlide + 20;
+//$startYbtn += 20; // + вертикальный отступ после слайда
 $startXbtn = $c[0] + 10; // координата X начала кнопки
 $src = __DIR__ . '/resources/style/css/assets/images/upload.png';
 $imgSize = getimagesize($src); // получение размера изображения
@@ -103,7 +121,7 @@ drawButtonWithIcon($im, $startXbtn, $startYbtn + $hTopMenu, $imgSize, $src, true
 $fontSize = 11;
 $font = __DIR__ . '/resources/fonts/arial.ttf';
 $textBlack = imagecolorallocate($im, 00, 00, 00);
-imagettftext ($im, $fontSize, 0, $startXbtn - 5, $titlePadding - 10 + $hTopMenu, $textColor, $font, $presentationName );
+imagettftext ($im, $fontSize, 0, $startXbtn - 5, $hTopMenu + $titlePadding - $fontSize + 2, $textColor, $font, $presentationName );
 
 // кнопка с количеством слайдов
 $startXbtn += 50;
@@ -150,7 +168,7 @@ $wStudentBlock = $c[2] - $pad * 2;
 // Название презентации
 $fontSize = 11;
 $textBlack = imagecolorallocate($im, 00, 00, 00);
-imagettftext ($im, $fontSize, 0, 115, $titlePadding - 12 + $hTopMenu, $textColor, $font, count($students) );
+imagettftext ($im, $fontSize, 0, 115, $hTopMenu + $titlePadding - $fontSize, $textColor, $font, count($students) );
 
 $studentImage = imagecreate($wStudentBlock, $hStudentBlock);
 // Цвета полос и имени преподавателя
@@ -167,9 +185,11 @@ imagefill($studentImage, 0, 0, $white);
 imagefilledrectangle($studentImage, 0, $c[1], $c[2], $hStudentMenu, $lightGrey);
 $offsetHLine = 20;
 $textColor = imagecolorallocate($studentImage, 47, 47, 47); // цвет текста
-imagettftext ($studentImage, 10, 0, 5, $offsetHLine, $textColor, $font, 'Статус' );
-imagettftext ($studentImage, 10, 0, 5 + 50, $offsetHLine, $textColor, $font, 'Имя' );
-imagettftext ($studentImage, 10, 0, 5 + 160, $offsetHLine, $textColor, $font, 'Медиа' );
+$startXList = $wStudentBlock / 5;
+// ширина блока разделена условно на 5 частей
+imagettftext ($studentImage, 10, 0, 2, $offsetHLine, $textColor, $font, 'Статус' );
+imagettftext ($studentImage, 10, 0, $startXList + 8, $offsetHLine, $textColor, $font, 'Имя' );
+imagettftext ($studentImage, 10, 0, $startXList *4 - 12, $offsetHLine, $textColor, $font, 'Медиа' );
 
 // Серые полосы
 $offsetHLine += 11; // Отступ сверху
@@ -180,20 +200,19 @@ for ($i = 1; $i < $countLines; $i++) {
     imagefilledrectangle($studentImage, 0, $offsetHLine + ($hLine * $i++), $c[2], $offsetHLine + ($hLine * $i), $grey);
 }
 
-$startXList = 40;
 $hStudentName = 15;
 $fontSize = 8;
 // Имя преподавателя
-imagettftext($studentImage, $fontSize, 0, 53, $offsetHLine + $hStudentName, $colorMasterName, $font, $master );
+imagettftext($studentImage, $fontSize, 0, $startXList + 8, $offsetHLine + $hStudentName, $colorMasterName, $font, $master );
 
 
 $hMicro = $offsetHLine + $hStudentName + 20;
 // Имена студентов
 foreach ($students as $v) {
-    imagettftext($studentImage, $fontSize, 0, 53, $offsetHLine + $hStudentName + 20, $textColor, $font, $v['name'] );
+    imagettftext($studentImage, $fontSize, 0, $startXList + 8, $offsetHLine + $hStudentName + 20, $textColor, $font, $v['name'] );
     $hStudentName += $hLine;
 }
-$startXList = $wStudentBlock / 5;
+//$startXList = $wStudentBlock / 5;
 // Вертикальные линии в блоке списка студентов
 $greyVLine = imagecolorallocate($studentImage, 197, 197, 197);
 imageline ($studentImage, $startXList + 5 , $offsetHLine - 32, $startXList + 5, $hStudentBlock, $greyVLine);
@@ -289,8 +308,8 @@ imagerectangle($imageChat, 5, $hChat - 100, $wChat - 115, $hChat - 10, $greyHori
 $buttonFilledColor = imagecolorallocate($imageChat, 220, 220, 220);
 // фон кнопки
 drawRoundRectangle($imageChat, $wChat - 100, $hChat - 70, $wChat - 10, $hChat - 36, 3, $buttonFilledColor);
-// бордер кнопки
-drawRoundRectangleNotFilled($imageChat, $wChat - 100, $hChat - 70, 375, $hChat - 36, 3, $greyHorizLine);
+// бордер кнопки - расчет от правой границы
+drawRoundRectangleNotFilled($imageChat, $wChat - 100, $hChat - 70, $wChat - 10, $hChat - 36, 3, $greyHorizLine);
 imagettftext ($imageChat , $fontSize , 0, $wChat - 91 , $hChat - 48, $textColor , $font , 'Отправить');
 
 // Меню чата вкладка Настройки
@@ -306,7 +325,8 @@ imagecopy($im, $imageChat, $c[0]+2, $c[1] + $hTopMenu + $titlePadding, 0, 0, $wC
 
 // кнопка "экран"
 $startXbtn = 10;
-$startYbtn = 6;
+// высота кнопок верхнего меню = 24 (низкие, с параметром $square = 2)
+$startYbtn = ($hTopMenu - 24) / 2 - 1;
 $src = __DIR__ . '/resources/style/css/assets/images/deskshare_icon.png';
 $imgSize = getimagesize($src);
 
@@ -369,6 +389,9 @@ $src = __DIR__ . '/resources/style/css/assets/images/logout.png';
 $imgSize = getimagesize($src);
 
 drawButtonWithIcon($im, $startXbtn, $startYbtn, $imgSize, $src, false, 2);
+// нижняя граница картинки
+$lightGrey = imagecolorallocate($im, 240, 240, 240);
+imagefilledrectangle($im, 0, $h - 5, $w, $h + 1, $lightGrey);
 
 imagepng($im, 'test.png');
 imagedestroy($im);
